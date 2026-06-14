@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YT Downloader</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #2e2e2e;
+      --red: #ff2d2d;
+      --red-dark: #cc1f1f;
+      --red-glow: rgba(255,45,45,0.15);
+      --text: #f0f0f0;
+      --muted: #888;
+      --success: #22c55e;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 80px;
+    }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: var(--red);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px var(--red-glow);
+    }
+
+    .logo-icon svg { width: 22px; height: 22px; fill: white; }
+
+    .logo-text {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text span { color: var(--red); }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* CARD */
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* URL INPUT */
+    .url-wrapper {
+      display: flex;
+      gap: 10px;
+    }
+
+    .url-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .url-input:focus { border-color: var(--red); }
+    .url-input::placeholder { color: var(--muted); }
+
+    .btn-check {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 12px 16px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .btn-check:hover { border-color: var(--red); color: var(--red); }
+
+    /* VIDEO PREVIEW */
+    .preview {
+      display: none;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .preview.show { display: flex; gap: 14px; align-items: center; padding: 14px; }
+
+    .preview-thumb {
+      width: 90px; height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .preview-info { min-width: 0; }
+
+    .preview-title {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .preview-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* FORMAT SELECTOR */
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+    }
+
+    .format-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .format-btn {
+      flex: 1;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .format-btn .fmt-icon { font-size: 22px; }
+    .format-btn .fmt-desc { font-size: 11px; font-weight: 400; }
+
+    .format-btn:hover { border-color: var(--red); color: var(--text); }
+    .format-btn.active {
+      border-color: var(--red);
+      background: var(--red-glow);
+      color: var(--text);
+      box-shadow: 0 0 0 1px var(--red);
+    }
+
+    /* TIME RANGE */
+    .time-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .time-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .time-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: 'Inter', monospace;
+    }
+
+    .time-input:focus { border-color: var(--red); }
+    .time-input::placeholder { color: var(--border); font-weight: 400; }
+
+    .time-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    /* DOWNLOAD BUTTON */
+    .btn-download {
+      width: 100%;
+      background: var(--red);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.2px;
+      box-shadow: 0 4px 20px var(--red-glow);
+    }
+
+    .btn-download:hover:not(:disabled) {
+      background: var(--red-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(255,45,45,0.3);
+    }
+
+    .btn-download:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* PROGRESS / STATUS */
+    .status-box {
+      display: none;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .status-box.show { display: flex; }
+    .status-box.loading { border-color: #444; color: var(--muted); }
+    .status-box.error { border-color: #ff4444; color: #ff7777; }
+    .status-box.success { border-color: var(--success); color: var(--success); }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid #444;
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* SETUP BOX */
+    .setup-box {
+      display: none;
+      background: #1a1200;
+      border: 1px solid #554400;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #ffcc44;
+    }
+
+    .setup-box.show { display: block; }
+    .setup-box h4 { margin-bottom: 8px; font-size: 14px; }
+    .setup-box code {
+      background: #111;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #aaffaa;
+    }
+    .setup-box ol { padding-left: 18px; }
+    .setup-box li { margin-bottom: 4px; }
+    .setup-box a { color: #ffaa00; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2H10v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a7 7 0 0 0-.79-.05A7.07 7.07 0 0 0 0 16.03a7.07 7.07 0 0 0 7.12 7.02 7.07 7.07 0 0 0 7.11-7.02V9.15a10.87 10.87 0 0 0 6.36 2.03V6.07a4.87 4.87 0 0 1-1-.38z"/></svg>
+      </div>
+      <span class="logo-text">YT<span>Grab</span></span>
+    </div>
+    <p class="tagline">Download YouTube sebagai MP3 atau MP4, pilih rentang waktu sesukamu</p>
+  </div>
+
+  <div class="card">
+
+    <!-- URL -->
+    <div>
+      <div class="section-label">Link YouTube</div>
+      <div class="url-wrapper">
+        <input class="url-input" id="urlInput" type="url" placeholder="https://www.youtube.com/watch?v=..." />
+        <button class="btn-check" onclick="fetchInfo()">Cek Video</button>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview" id="preview">
+      <img class="preview-thumb" id="previewThumb" src="" alt="" />
+      <div class="preview-info">
+        <div class="preview-title" id="previewTitle"></div>
+        <div class="preview-meta" id="previewMeta"></div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Format -->
+    <div>
+      <div class="section-label">Format Output</div>
+      <div class="format-row">
+        <button class="format-btn active" id="btnMp3" onclick="selectFormat('mp3')">
+          <span class="fmt-icon">🎵</span>
+          <span>MP3</span>
+          <span class="fmt-desc">Audio saja</span>
+        </button>
+        <button class="format-btn" id="btnMp4" onclick="selectFormat('mp4')">
+          <span class="fmt-icon">🎬</span>
+          <span>MP4</span>
+          <span class="fmt-desc">Video + Audio</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Time Range -->
+    <div>
+      <div class="section-label">Rentang Waktu <span style="color:#555;font-weight:400;text-transform:none">(opsional — kosongkan untuk download penuh)</span></div>
+      <div class="time-row">
+        <div class="time-group">
+          <label>⏱ Mulai dari</label>
+          <input class="time-input" id="startTime" type="text" placeholder="0:00" />
+        </div>
+        <div class="time-group">
+          <label>⏹ Sampai menit</label>
+          <input class="time-input" id="endTime" type="text" placeholder="6:00" />
+        </div>
+      </div>
+      <p class="time-hint">Format: menit:detik — contoh <strong>5:30</strong> = menit ke-5 detik ke-30</p>
+    </div>
+
+    <!-- Download btn -->
+    <button class="btn-download" id="btnDownload" onclick="startDownload()">
+      ⬇ Download Sekarang
+    </button>
+
+    <!-- Status -->
+    <div class="status-box" id="statusBox">
+      <div class="spinner" id="statusSpinner"></div>
+      <span id="statusText"></span>
+    </div>
+
+    <!-- Setup Instructions -->
+    <div class="setup-box" id="setupBox">
+      <h4>⚠️ Perlu install dulu:</h4>
+      <ol>
+        <li>Install <strong>yt-dlp</strong>: download <a href="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" target="_blank">yt-dlp.exe</a>, taruh di folder project, atau tambahkan ke PATH</li>
+        <li>Install <strong>ffmpeg</strong>: download di <a href="https://ffmpeg.org/download.html" target="_blank">ffmpeg.org</a>, ekstrak, lalu tambahkan folder <code>bin</code>-nya ke PATH Windows</li>
+        <li>Restart Command Prompt lalu jalankan ulang: <code>npm start</code></li>
+      </ol>
+    </div>
+
+  </div>
+
+  <script>
+    let selectedFormat = 'mp3';
+    let videoInfo = null;
+
+    function selectFormat(fmt) {
+      selectedFormat = fmt;
+      document.getElementById('btnMp3').classList.toggle('active', fmt === 'mp3');
+      document.getElementById('btnMp4').classList.toggle('active', fmt === 'mp4');
+    }
+
+    function formatDuration(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}:${String(s).padStart(2,'0')}`;
+    }
+
+    function showStatus(type, msg) {
+      const box = document.getElementById('statusBox');
+      const spinner = document.getElementById('statusSpinner');
+      const text = document.getElementById('statusText');
+      box.className = 'status-box show ' + type;
+      spinner.style.display = type === 'loading' ? 'block' : 'none';
+      text.textContent = msg;
+    }
+
+    function hideStatus() {
+      document.getElementById('statusBox').className = 'status-box';
+      document.getElementById('setupBox').className = 'setup-box';
+    }
+
+    async function fetchInfo() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) return alert('Masukkan URL YouTube dulu!');
+      hideStatus();
+      showStatus('loading', 'Mengambil info video...');
+
+      try {
+        const res = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        if (!res.ok) {
+          if (data.setup) showSetup();
+          else showStatus('error', '❌ ' + data.error);
+          return;
+        }
+        videoInfo = data;
+        document.getElementById('previewThumb').src = data.thumbnail;
+        document.getElementById('previewTitle').textContent = data.title;
+        document.getElementById('previewMeta').textContent =
+          `${data.uploader} · ${formatDuration(data.duration)}`;
+        document.getElementById('preview').className = 'preview show';
+        hideStatus();
+      } catch (e) {
+        showStatus('error', '❌ Tidak bisa terhubung ke server. Pastikan server sudah berjalan.');
+      }
+    }
+
+    function showSetup() {
+      document.getElementById('statusBox').className = 'status-box';
+      document.getElementById('setupBox').className = 'setup-box show';
+    }
+
+    async function startDownload() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) return alert('Masukkan URL YouTube dulu!');
+
+      const startTime = document.getElementById('startTime').value.trim();
+      const endTime = document.getElementById('endTime').value.trim();
+
+      hideStatus();
+      const btn = document.getElementById('btnDownload');
+      btn.disabled = true;
+      showStatus('loading', `Sedang memproses ${selectedFormat.toUpperCase()}... Mohon tunggu, bisa beberapa menit.`);
+
+      try {
+        const res = await fetch('/api/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, format: selectedFormat, startTime, endTime }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          if (data.setup) showSetup();
+          else showStatus('error', '❌ ' + data.error);
+          return;
+        }
+
+        // Trigger download
+        if (!res.ok) {
+          const data = await res.json();
+          if (data.setup) showSetup();
+          else showStatus('error', '❌ ' + data.error);
+          return;
+        }
+
+        const contentType = res.headers.get('Content-Type') || '';
+        const disposition = res.headers.get('Content-Disposition') || '';
+        let filename = disposition.match(/filename="?([^";\n]+)"?/)?.[1]?.trim() || `hasil.${selectedFormat}`;
+
+        const reader = res.body.getReader();
+        const chunks = [];
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+        }
+
+        const blob = new Blob(chunks, { type: contentType });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+
+        showStatus('success', '✅ Download berhasil!');
+      } catch (e) {
+        showStatus('error', '❌ Terjadi kesalahan: ' + e.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Enter key trigger
+    document.getElementById('urlInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') fetchInfo();
+    });
+  </script>
+
+</body>
+</html>
