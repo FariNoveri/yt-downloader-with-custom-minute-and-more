@@ -3,548 +3,651 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>YT Downloader</title>
+  <title>YTGrab</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0f0f0f;
-      --surface: #1a1a1a;
-      --surface2: #242424;
-      --border: #2e2e2e;
-      --red: #ff2d2d;
-      --red-dark: #cc1f1f;
-      --red-glow: rgba(255,45,45,0.15);
-      --text: #f0f0f0;
-      --muted: #888;
-      --success: #22c55e;
+      --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424; --border: #2e2e2e;
+      --red: #ff2d2d; --red-dark: #cc1f1f; --red-glow: rgba(255,45,45,0.15);
+      --text: #f0f0f0; --muted: #888; --success: #22c55e; --blue: #3b82f6;
     }
-
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
       padding: 40px 16px 80px;
     }
-
-    /* HEADER */
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
+    .header { text-align: center; margin-bottom: 40px; }
+    .logo { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 12px; }
     .logo-icon {
-      width: 40px; height: 40px;
-      background: var(--red);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 20px var(--red-glow);
+      width: 40px; height: 40px; background: var(--red); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--red-glow);
     }
-
     .logo-icon svg { width: 22px; height: 22px; fill: white; }
-
-    .logo-text {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
+    .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
     .logo-text span { color: var(--red); }
+    .tagline { color: var(--muted); font-size: 14px; }
 
-    .tagline {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    /* CARD */
     .card {
-      width: 100%;
-      max-width: 560px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      width: 100%; max-width: 560px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 20px;
     }
 
-    /* URL INPUT */
-    .url-wrapper {
-      display: flex;
-      gap: 10px;
-    }
-
+    /* URL */
+    .url-wrapper { display: flex; gap: 8px; }
     .url-input {
-      flex: 1;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 14px;
-      padding: 12px 14px;
-      outline: none;
-      transition: border-color 0.2s;
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 14px; padding: 12px 14px;
+      outline: none; transition: border-color 0.2s;
     }
-
     .url-input:focus { border-color: var(--red); }
     .url-input::placeholder { color: var(--muted); }
-
     .btn-check {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 600;
-      padding: 12px 16px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      color: var(--text); font-size: 13px; font-weight: 600; padding: 12px 14px;
+      cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0;
     }
-
     .btn-check:hover { border-color: var(--red); color: var(--red); }
-
-    /* VIDEO PREVIEW */
-    .preview {
-      display: none;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
+    .btn-clear-url {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      color: var(--muted); font-size: 16px; padding: 12px 13px;
+      cursor: pointer; transition: all 0.2s; flex-shrink: 0; line-height: 1;
     }
+    .btn-clear-url:hover { border-color: #ff4444; color: #ff4444; }
 
+    /* Top preview */
+    .preview { display: none; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
     .preview.show { display: flex; gap: 14px; align-items: center; padding: 14px; }
+    .preview-thumb { width: 90px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+    .preview-info { min-width: 0; flex: 1; }
+    .preview-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .preview-meta { font-size: 12px; color: var(--muted); }
 
-    .preview-thumb {
-      width: 90px; height: 60px;
-      object-fit: cover;
-      border-radius: 8px;
-      flex-shrink: 0;
-    }
-
-    .preview-info { min-width: 0; }
-
-    .preview-title {
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-    }
-
-    .preview-meta {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    /* FORMAT SELECTOR */
     .section-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-bottom: 10px;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
     }
-
-    .format-row {
-      display: flex;
-      gap: 10px;
-    }
-
+    .format-row { display: flex; gap: 10px; }
     .format-btn {
-      flex: 1;
-      background: var(--surface2);
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 600;
-      padding: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
+      flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 10px;
+      color: var(--muted); font-size: 14px; font-weight: 600; padding: 14px; cursor: pointer;
+      transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px;
     }
-
     .format-btn .fmt-icon { font-size: 22px; }
     .format-btn .fmt-desc { font-size: 11px; font-weight: 400; }
-
     .format-btn:hover { border-color: var(--red); color: var(--text); }
-    .format-btn.active {
-      border-color: var(--red);
-      background: var(--red-glow);
-      color: var(--text);
-      box-shadow: 0 0 0 1px var(--red);
-    }
+    .format-btn.active { border-color: var(--red); background: var(--red-glow); color: var(--text); box-shadow: 0 0 0 1px var(--red); }
 
-    /* TIME RANGE */
-    .time-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .time-group label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-      font-weight: 500;
-    }
-
+    .time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .time-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
     .time-input {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 15px;
-      font-weight: 600;
-      padding: 11px 14px;
-      outline: none;
-      transition: border-color 0.2s;
-      font-family: 'Inter', monospace;
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 15px; font-weight: 600;
+      padding: 11px 14px; outline: none; transition: border-color 0.2s; font-family: 'Inter', monospace;
     }
-
     .time-input:focus { border-color: var(--red); }
     .time-input::placeholder { color: var(--border); font-weight: 400; }
+    .time-hint { font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; opacity: 0.7; }
 
-    .time-hint {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 6px;
-      text-align: center;
-      opacity: 0.7;
+    /* Speed & Pitch */
+    .sp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .sp-block { display: flex; flex-direction: column; gap: 8px; }
+    .sp-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .sp-inputs { display: flex; gap: 8px; align-items: center; }
+    .sp-num {
+      width: 85px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px; font-weight: 600;
+      padding: 8px 10px; outline: none; transition: border-color 0.2s;
+      font-family: 'Inter', monospace; text-align: right;
     }
+    .sp-num:focus { border-color: var(--red); }
+    .sp-unit { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .sp-slider {
+      width: 100%; -webkit-appearance: none; appearance: none;
+      height: 4px; border-radius: 4px; background: var(--border); outline: none; cursor: pointer;
+    }
+    .sp-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--red); box-shadow: 0 0 6px var(--red-glow); cursor: pointer; transition: transform 0.1s;
+    }
+    .sp-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .sp-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--red); border: none; cursor: pointer; }
+    .sp-markers { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .sp-reset-row { display: flex; justify-content: flex-end; margin-top: -4px; }
+    .btn-reset-sp {
+      background: transparent; border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-size: 11px; padding: 3px 10px; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-reset-sp:hover { border-color: var(--red); color: var(--red); }
 
-    /* DOWNLOAD BUTTON */
+    /* Filename preview */
+    .filename-preview {
+      font-size: 11px; color: var(--muted); text-align: center;
+      padding: 6px 10px; background: var(--surface2); border-radius: 6px;
+      border: 1px solid var(--border); word-break: break-all; display: none;
+    }
+    .filename-preview.show { display: block; }
+
+    /* Button row */
+    .btn-row { display: flex; gap: 10px; }
+    .btn-preview {
+      flex: 1; background: var(--surface2); border: 2px solid var(--blue); border-radius: 12px;
+      color: var(--blue); font-size: 14px; font-weight: 700; padding: 14px; cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-preview:hover:not(:disabled) { background: rgba(59,130,246,0.12); transform: translateY(-1px); }
+    .btn-preview:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
     .btn-download {
-      width: 100%;
-      background: var(--red);
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      letter-spacing: 0.2px;
-      box-shadow: 0 4px 20px var(--red-glow);
+      flex: 1; background: var(--red); border: none; border-radius: 12px;
+      color: white; font-size: 14px; font-weight: 700; padding: 14px; cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+      gap: 7px; box-shadow: 0 4px 20px var(--red-glow);
     }
+    .btn-download:hover:not(:disabled) { background: var(--red-dark); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(255,45,45,0.3); }
+    .btn-download:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    .btn-download:hover:not(:disabled) {
-      background: var(--red-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 24px rgba(255,45,45,0.3);
+    .btn-reset-all {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+      color: var(--muted); font-size: 13px; font-weight: 600; padding: 14px 16px;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
     }
+    .btn-reset-all:hover { border-color: #ff4444; color: #ff4444; }
 
-    .btn-download:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
+    /* Audio player box */
+    .audio-box {
+      display: none; flex-direction: column; gap: 10px;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px;
     }
+    .audio-box.show { display: flex; }
+    .audio-box-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .audio-box-info { min-width: 0; }
+    .audio-box-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.5px; padding: 3px 8px;
+      border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+    }
+    .audio-box-badge.preview { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+    .audio-box-badge.downloaded { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+    .audio-box-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+    .audio-box-sub { font-size: 11px; color: var(--muted); }
+    .audio-box audio { width: 100%; height: 36px; accent-color: var(--red); border-radius: 8px; }
 
-    /* PROGRESS / STATUS */
+    /* Status */
     .status-box {
-      display: none;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 13px;
-      gap: 10px;
-      align-items: center;
+      display: none; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px; font-size: 13px; gap: 10px; align-items: center;
     }
-
     .status-box.show { display: flex; }
     .status-box.loading { border-color: #444; color: var(--muted); }
     .status-box.error { border-color: #ff4444; color: #ff7777; }
     .status-box.success { border-color: var(--success); color: var(--success); }
-
     .spinner {
-      width: 18px; height: 18px;
-      border: 2px solid #444;
-      border-top-color: var(--red);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      flex-shrink: 0;
+      width: 18px; height: 18px; border: 2px solid #444; border-top-color: var(--red);
+      border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* SETUP BOX */
     .setup-box {
-      display: none;
-      background: #1a1200;
-      border: 1px solid #554400;
-      border-radius: 12px;
-      padding: 16px;
-      font-size: 13px;
-      line-height: 1.7;
-      color: #ffcc44;
+      display: none; background: #1a1200; border: 1px solid #554400;
+      border-radius: 12px; padding: 16px; font-size: 13px; line-height: 1.7; color: #ffcc44;
     }
-
     .setup-box.show { display: block; }
     .setup-box h4 { margin-bottom: 8px; font-size: 14px; }
-    .setup-box code {
-      background: #111;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #aaffaa;
-    }
+    .setup-box code { background: #111; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #aaffaa; }
     .setup-box ol { padding-left: 18px; }
     .setup-box li { margin-bottom: 4px; }
     .setup-box a { color: #ffaa00; }
 
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-    }
+    .divider { border: none; border-top: 1px solid var(--border); }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="logo">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2H10v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a7 7 0 0 0-.79-.05A7.07 7.07 0 0 0 0 16.03a7.07 7.07 0 0 0 7.12 7.02 7.07 7.07 0 0 0 7.11-7.02V9.15a10.87 10.87 0 0 0 6.36 2.03V6.07a4.87 4.87 0 0 1-1-.38z"/></svg>
-      </div>
-      <span class="logo-text">YT<span>Grab</span></span>
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2H10v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a7 7 0 0 0-.79-.05A7.07 7.07 0 0 0 0 16.03a7.07 7.07 0 0 0 7.12 7.02 7.07 7.07 0 0 0 7.11-7.02V9.15a10.87 10.87 0 0 0 6.36 2.03V6.07a4.87 4.87 0 0 1-1-.38z"/></svg>
     </div>
-    <p class="tagline">Download YouTube sebagai MP3 atau MP4, pilih rentang waktu sesukamu</p>
+    <span class="logo-text">YT<span>Grab</span></span>
+  </div>
+  <p class="tagline">Download YouTube sebagai MP3 atau MP4, pilih rentang waktu sesukamu</p>
+</div>
+
+<div class="card">
+
+  <!-- URL -->
+  <div>
+    <div class="section-label">Link YouTube</div>
+    <div class="url-wrapper">
+      <input class="url-input" id="urlInput" type="url" placeholder="https://www.youtube.com/watch?v=..." />
+      <button class="btn-check" onclick="fetchInfo()">Cek Video</button>
+      <button class="btn-clear-url" onclick="clearUrl()" title="Hapus URL">✕</button>
+    </div>
   </div>
 
-  <div class="card">
-
-    <!-- URL -->
-    <div>
-      <div class="section-label">Link YouTube</div>
-      <div class="url-wrapper">
-        <input class="url-input" id="urlInput" type="url" placeholder="https://www.youtube.com/watch?v=..." />
-        <button class="btn-check" onclick="fetchInfo()">Cek Video</button>
-      </div>
+  <!-- Top preview (thumbnail) -->
+  <div class="preview" id="preview">
+    <img class="preview-thumb" id="previewThumb" src="" alt="" />
+    <div class="preview-info">
+      <div class="preview-title" id="previewTitle"></div>
+      <div class="preview-meta" id="previewMeta"></div>
     </div>
-
-    <!-- Preview -->
-    <div class="preview" id="preview">
-      <img class="preview-thumb" id="previewThumb" src="" alt="" />
-      <div class="preview-info">
-        <div class="preview-title" id="previewTitle"></div>
-        <div class="preview-meta" id="previewMeta"></div>
-      </div>
-    </div>
-
-    <hr class="divider" />
-
-    <!-- Format -->
-    <div>
-      <div class="section-label">Format Output</div>
-      <div class="format-row">
-        <button class="format-btn active" id="btnMp3" onclick="selectFormat('mp3')">
-          <span class="fmt-icon">🎵</span>
-          <span>MP3</span>
-          <span class="fmt-desc">Audio saja</span>
-        </button>
-        <button class="format-btn" id="btnMp4" onclick="selectFormat('mp4')">
-          <span class="fmt-icon">🎬</span>
-          <span>MP4</span>
-          <span class="fmt-desc">Video + Audio</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Time Range -->
-    <div>
-      <div class="section-label">Rentang Waktu <span style="color:#555;font-weight:400;text-transform:none">(opsional — kosongkan untuk download penuh)</span></div>
-      <div class="time-row">
-        <div class="time-group">
-          <label>⏱ Mulai dari</label>
-          <input class="time-input" id="startTime" type="text" placeholder="0:00" />
-        </div>
-        <div class="time-group">
-          <label>⏹ Sampai menit</label>
-          <input class="time-input" id="endTime" type="text" placeholder="6:00" />
-        </div>
-      </div>
-      <p class="time-hint">Format: menit:detik — contoh <strong>5:30</strong> = menit ke-5 detik ke-30</p>
-    </div>
-
-    <!-- Download btn -->
-    <button class="btn-download" id="btnDownload" onclick="startDownload()">
-      ⬇ Download Sekarang
-    </button>
-
-    <!-- Status -->
-    <div class="status-box" id="statusBox">
-      <div class="spinner" id="statusSpinner"></div>
-      <span id="statusText"></span>
-    </div>
-
-    <!-- Setup Instructions -->
-    <div class="setup-box" id="setupBox">
-      <h4>⚠️ Perlu install dulu:</h4>
-      <ol>
-        <li>Install <strong>yt-dlp</strong>: download <a href="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" target="_blank">yt-dlp.exe</a>, taruh di folder project, atau tambahkan ke PATH</li>
-        <li>Install <strong>ffmpeg</strong>: download di <a href="https://ffmpeg.org/download.html" target="_blank">ffmpeg.org</a>, ekstrak, lalu tambahkan folder <code>bin</code>-nya ke PATH Windows</li>
-        <li>Restart Command Prompt lalu jalankan ulang: <code>npm start</code></li>
-      </ol>
-    </div>
-
   </div>
 
-  <script>
-    let selectedFormat = 'mp3';
-    let videoInfo = null;
+  <hr class="divider" />
 
-    function selectFormat(fmt) {
-      selectedFormat = fmt;
-      document.getElementById('btnMp3').classList.toggle('active', fmt === 'mp3');
-      document.getElementById('btnMp4').classList.toggle('active', fmt === 'mp4');
+  <!-- Format -->
+  <div>
+    <div class="section-label">Format Output</div>
+    <div class="format-row">
+      <button class="format-btn active" id="btnMp3" onclick="selectFormat('mp3')">
+        <span class="fmt-icon">🎵</span><span>MP3</span><span class="fmt-desc">Audio saja</span>
+      </button>
+      <button class="format-btn" id="btnMp4" onclick="selectFormat('mp4')">
+        <span class="fmt-icon">🎬</span><span>MP4</span><span class="fmt-desc">Video + Audio</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Time Range -->
+  <div>
+    <div class="section-label">Rentang Waktu <span style="color:#555;font-weight:400;text-transform:none">(opsional)</span></div>
+    <div class="time-row">
+      <div class="time-group">
+        <label>⏱ Mulai dari</label>
+        <input class="time-input" id="startTime" type="text" placeholder="0:00" oninput="saveState()" />
+      </div>
+      <div class="time-group">
+        <label>⏹ Sampai menit</label>
+        <input class="time-input" id="endTime" type="text" placeholder="6:00" oninput="saveState()" />
+      </div>
+    </div>
+    <p class="time-hint">Format: menit:detik — contoh <strong>5:30</strong> = menit ke-5 detik ke-30</p>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Speed & Pitch -->
+  <div>
+    <div class="section-label">Speed &amp; Pitch <span style="color:#555;font-weight:400;text-transform:none">(opsional)</span></div>
+    <div class="sp-grid">
+      <div class="sp-block">
+        <div class="sp-label">🚀 Speed Multiplier</div>
+        <div class="sp-inputs">
+          <input class="sp-num" id="speedMult" type="number" value="1.000" min="0.5" max="2.0" step="0.001" oninput="onSpeedMultChange()" onchange="onSpeedMultChange()" />
+          <span class="sp-unit">×</span>
+        </div>
+        <div class="sp-inputs">
+          <input class="sp-num" id="speedPct" type="number" value="0.000" min="-50" max="100" step="0.001" oninput="onSpeedPctChange()" onchange="onSpeedPctChange()" />
+          <span class="sp-unit">%</span>
+        </div>
+        <input class="sp-slider" id="speedSlider" type="range" min="0.5" max="2.0" step="0.001" value="1.0" oninput="onSpeedSlider()" />
+        <div class="sp-markers"><span>0.5×</span><span>1×</span><span>2×</span></div>
+      </div>
+      <div class="sp-block">
+        <div class="sp-label">🎵 Pitch (semitone)</div>
+        <div class="sp-inputs">
+          <input class="sp-num" id="pitchVal" type="number" value="0" min="-12" max="12" step="0.5" oninput="onPitchChange()" onchange="onPitchChange()" style="width:85px" />
+          <span class="sp-unit">st</span>
+        </div>
+        <div style="height:26px"></div>
+        <input class="sp-slider" id="pitchSlider" type="range" min="-12" max="12" step="0.5" value="0" oninput="onPitchSlider()" />
+        <div class="sp-markers"><span>-12st</span><span>0</span><span>+12st</span></div>
+      </div>
+    </div>
+    <div class="sp-reset-row">
+      <button class="btn-reset-sp" onclick="resetSpeedPitch()">↺ Reset Speed & Pitch</button>
+    </div>
+  </div>
+
+  <!-- Filename preview -->
+  <div class="filename-preview" id="filenamePreview">
+    📁 <span id="filenameText"></span>
+  </div>
+
+  <!-- Buttons -->
+  <div class="btn-row">
+    <button class="btn-preview" id="btnPreview" onclick="startPreview()">▶ Preview</button>
+    <button class="btn-download" id="btnDownload" onclick="startDownload()">⬇ Download</button>
+    <button class="btn-reset-all" onclick="resetAll()" title="Reset semua">↺</button>
+  </div>
+
+  <!-- Audio Player Box (preview & downloaded) -->
+  <div class="audio-box" id="audioBox">
+    <div class="audio-box-header">
+      <div class="audio-box-info">
+        <div class="audio-box-title" id="audioBoxTitle"></div>
+        <div class="audio-box-sub" id="audioBoxSub"></div>
+      </div>
+      <span class="audio-box-badge" id="audioBoxBadge"></span>
+    </div>
+    <audio id="audioPlayer" controls></audio>
+  </div>
+
+  <!-- Status -->
+  <div class="status-box" id="statusBox">
+    <div class="spinner" id="statusSpinner"></div>
+    <span id="statusText"></span>
+  </div>
+
+  <!-- Setup Instructions -->
+  <div class="setup-box" id="setupBox">
+    <h4>⚠️ Perlu install dulu:</h4>
+    <ol>
+      <li>Install <strong>yt-dlp</strong>: download <a href="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" target="_blank">yt-dlp.exe</a>, taruh di folder project</li>
+      <li>Install <strong>ffmpeg</strong>: download di <a href="https://ffmpeg.org/download.html" target="_blank">ffmpeg.org</a>, tambahkan folder <code>bin</code>-nya ke PATH Windows</li>
+      <li>Restart Command Prompt lalu jalankan ulang: <code>npm start</code></li>
+    </ol>
+  </div>
+
+</div>
+
+<script>
+  let selectedFormat = 'mp3';
+  let videoInfo = null;
+  let previewBlobUrl = null; // blob URL hasil preview, dipakai ulang saat download
+  const SS = sessionStorage;
+
+  // ── Save/Load state ──
+  function saveState() {
+    SS.setItem('ytg_url',    document.getElementById('urlInput').value);
+    SS.setItem('ytg_start',  document.getElementById('startTime').value);
+    SS.setItem('ytg_end',    document.getElementById('endTime').value);
+    SS.setItem('ytg_format', selectedFormat);
+    SS.setItem('ytg_speed',  document.getElementById('speedMult').value);
+    SS.setItem('ytg_pct',    document.getElementById('speedPct').value);
+    SS.setItem('ytg_pitch',  document.getElementById('pitchVal').value);
+    if (videoInfo) SS.setItem('ytg_info', JSON.stringify(videoInfo));
+    updateFilenamePreview();
+  }
+
+  function loadState() {
+    const url   = SS.getItem('ytg_url');
+    const start = SS.getItem('ytg_start');
+    const end   = SS.getItem('ytg_end');
+    const fmt   = SS.getItem('ytg_format');
+    const speed = SS.getItem('ytg_speed');
+    const pct   = SS.getItem('ytg_pct');
+    const pitch = SS.getItem('ytg_pitch');
+    const info  = SS.getItem('ytg_info');
+
+    if (url)   document.getElementById('urlInput').value = url;
+    if (start) document.getElementById('startTime').value = start;
+    if (end)   document.getElementById('endTime').value = end;
+    if (fmt)   selectFormat(fmt);
+    if (speed) {
+      document.getElementById('speedMult').value   = speed;
+      document.getElementById('speedPct').value    = pct || '0.000';
+      document.getElementById('speedSlider').value = speed;
     }
-
-    function formatDuration(sec) {
-      const m = Math.floor(sec / 60);
-      const s = sec % 60;
-      return `${m}:${String(s).padStart(2,'0')}`;
+    if (pitch) {
+      document.getElementById('pitchVal').value    = pitch;
+      document.getElementById('pitchSlider').value = pitch;
     }
-
-    function showStatus(type, msg) {
-      const box = document.getElementById('statusBox');
-      const spinner = document.getElementById('statusSpinner');
-      const text = document.getElementById('statusText');
-      box.className = 'status-box show ' + type;
-      spinner.style.display = type === 'loading' ? 'block' : 'none';
-      text.textContent = msg;
+    if (info) {
+      videoInfo = JSON.parse(info);
+      document.getElementById('previewThumb').src  = videoInfo.thumbnail;
+      document.getElementById('previewTitle').textContent = videoInfo.title;
+      document.getElementById('previewMeta').textContent  = `${videoInfo.uploader} · ${formatDuration(videoInfo.duration)}`;
+      document.getElementById('preview').className = 'preview show';
     }
+    updateFilenamePreview();
+  }
 
-    function hideStatus() {
-      document.getElementById('statusBox').className = 'status-box';
-      document.getElementById('setupBox').className = 'setup-box';
+  // ── Helpers ──
+  function formatDuration(sec) {
+    const m = Math.floor(sec / 60), s = sec % 60;
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+  function sanitizeFilename(str) {
+    return str.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, ' ').trim();
+  }
+  function buildFilename() {
+    const title = videoInfo ? sanitizeFilename(videoInfo.title) : 'hasil';
+    const speed = parseFloat(document.getElementById('speedMult').value) || 1;
+    const pitch = parseFloat(document.getElementById('pitchVal').value)  || 0;
+    let suffix = '';
+    if (speed !== 1.0) suffix += ` ${speed.toFixed(3)}x`;
+    if (pitch !== 0)   suffix += ` ${pitch > 0 ? '+' : ''}${pitch}st`;
+    return `${title}${suffix}.${selectedFormat}`;
+  }
+  function updateFilenamePreview() {
+    document.getElementById('filenameText').textContent = buildFilename();
+    document.getElementById('filenamePreview').className = 'filename-preview show';
+  }
+  function getParams() {
+    return {
+      url:       document.getElementById('urlInput').value.trim(),
+      format:    selectedFormat,
+      startTime: document.getElementById('startTime').value.trim(),
+      endTime:   document.getElementById('endTime').value.trim(),
+      speed:     parseFloat(document.getElementById('speedMult').value),
+      pitch:     parseFloat(document.getElementById('pitchVal').value),
+      filename:  buildFilename(),
+    };
+  }
+
+  // ── Status ──
+  function showStatus(type, msg) {
+    const box = document.getElementById('statusBox');
+    box.className = 'status-box show ' + type;
+    document.getElementById('statusSpinner').style.display = type === 'loading' ? 'block' : 'none';
+    document.getElementById('statusText').textContent = msg;
+  }
+  function hideStatus() {
+    document.getElementById('statusBox').className = 'status-box';
+    document.getElementById('setupBox').className  = 'setup-box';
+  }
+  function showSetup() {
+    document.getElementById('statusBox').className = 'status-box';
+    document.getElementById('setupBox').className  = 'setup-box show';
+  }
+
+  // ── Format ──
+  function selectFormat(fmt) {
+    selectedFormat = fmt;
+    document.getElementById('btnMp3').classList.toggle('active', fmt === 'mp3');
+    document.getElementById('btnMp4').classList.toggle('active', fmt === 'mp4');
+    // Reset preview kalau format berubah
+    hideAudioBox();
+    if (previewBlobUrl) { URL.revokeObjectURL(previewBlobUrl); previewBlobUrl = null; }
+    saveState();
+  }
+
+  // ── Speed & Pitch ──
+  function clampSpeed(v) { return Math.min(2.0, Math.max(0.5, v)); }
+  function clampPitch(v) { return Math.min(12,  Math.max(-12,  v)); }
+
+  function setSpeedFromMult(mult) {
+    mult = clampSpeed(mult);
+    document.getElementById('speedMult').value   = mult.toFixed(3);
+    document.getElementById('speedPct').value    = ((mult - 1) * 100).toFixed(3);
+    document.getElementById('speedSlider').value = mult.toFixed(3);
+    saveState();
+  }
+  function onSpeedMultChange() { const v = parseFloat(document.getElementById('speedMult').value); if (!isNaN(v)) setSpeedFromMult(v); }
+  function onSpeedPctChange()  { const p = parseFloat(document.getElementById('speedPct').value);  if (!isNaN(p)) setSpeedFromMult(1 + p / 100); }
+  function onSpeedSlider()     { setSpeedFromMult(parseFloat(document.getElementById('speedSlider').value)); }
+
+  function setPitch(v) {
+    v = clampPitch(v);
+    document.getElementById('pitchVal').value    = v;
+    document.getElementById('pitchSlider').value = v;
+    saveState();
+  }
+  function onPitchChange()  { const v = parseFloat(document.getElementById('pitchVal').value);    if (!isNaN(v)) setPitch(v); }
+  function onPitchSlider()  { const v = parseFloat(document.getElementById('pitchSlider').value); setPitch(v); }
+  function resetSpeedPitch() { setSpeedFromMult(1.0); setPitch(0); }
+
+  // ── Audio box ──
+  function showAudioBox(blobUrl, badge, badgeClass, subtitle) {
+    const box = document.getElementById('audioBox');
+    const player = document.getElementById('audioPlayer');
+    document.getElementById('audioBoxTitle').textContent = videoInfo ? videoInfo.title : 'Hasil';
+    document.getElementById('audioBoxSub').textContent   = subtitle;
+    document.getElementById('audioBoxBadge').textContent = badge;
+    document.getElementById('audioBoxBadge').className   = `audio-box-badge ${badgeClass}`;
+    player.src = blobUrl;
+    box.className = 'audio-box show';
+    player.play().catch(() => {});
+  }
+  function hideAudioBox() {
+    document.getElementById('audioBox').className = 'audio-box';
+    document.getElementById('audioPlayer').src = '';
+  }
+
+  // ── Reset ──
+  function clearUrl() {
+    document.getElementById('urlInput').value = '';
+    document.getElementById('preview').className = 'preview';
+    videoInfo = null;
+    SS.removeItem('ytg_url'); SS.removeItem('ytg_info');
+    hideStatus(); hideAudioBox();
+    if (previewBlobUrl) { URL.revokeObjectURL(previewBlobUrl); previewBlobUrl = null; }
+    updateFilenamePreview();
+  }
+  function resetAll() {
+    document.getElementById('urlInput').value = '';
+    document.getElementById('preview').className = 'preview';
+    document.getElementById('startTime').value = '';
+    document.getElementById('endTime').value   = '';
+    videoInfo = null;
+    setSpeedFromMult(1.0); setPitch(0); selectFormat('mp3');
+    hideStatus(); hideAudioBox();
+    if (previewBlobUrl) { URL.revokeObjectURL(previewBlobUrl); previewBlobUrl = null; }
+    SS.clear(); updateFilenamePreview();
+  }
+
+  // ── Fetch info ──
+  async function fetchInfo() {
+    const url = document.getElementById('urlInput').value.trim();
+    if (!url) return alert('Masukkan URL YouTube dulu!');
+    hideStatus();
+    showStatus('loading', 'Mengambil info video...');
+    try {
+      const res  = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+      if (!res.ok) { data.setup ? showSetup() : showStatus('error', '❌ ' + data.error); return; }
+      videoInfo = data;
+      document.getElementById('previewThumb').src  = data.thumbnail;
+      document.getElementById('previewTitle').textContent = data.title;
+      document.getElementById('previewMeta').textContent  = `${data.uploader} · ${formatDuration(data.duration)}`;
+      document.getElementById('preview').className = 'preview show';
+      hideStatus(); saveState();
+    } catch (e) {
+      showStatus('error', '❌ Tidak bisa terhubung ke server. Pastikan server sudah berjalan.');
     }
+  }
 
-    async function fetchInfo() {
-      const url = document.getElementById('urlInput').value.trim();
-      if (!url) return alert('Masukkan URL YouTube dulu!');
-      hideStatus();
-      showStatus('loading', 'Mengambil info video...');
-
-      try {
-        const res = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
-        const data = await res.json();
-        if (!res.ok) {
-          if (data.setup) showSetup();
-          else showStatus('error', '❌ ' + data.error);
-          return;
-        }
-        videoInfo = data;
-        document.getElementById('previewThumb').src = data.thumbnail;
-        document.getElementById('previewTitle').textContent = data.title;
-        document.getElementById('previewMeta').textContent =
-          `${data.uploader} · ${formatDuration(data.duration)}`;
-        document.getElementById('preview').className = 'preview show';
-        hideStatus();
-      } catch (e) {
-        showStatus('error', '❌ Tidak bisa terhubung ke server. Pastikan server sudah berjalan.');
-      }
-    }
-
-    function showSetup() {
-      document.getElementById('statusBox').className = 'status-box';
-      document.getElementById('setupBox').className = 'setup-box show';
-    }
-
-    async function startDownload() {
-      const url = document.getElementById('urlInput').value.trim();
-      if (!url) return alert('Masukkan URL YouTube dulu!');
-
-      const startTime = document.getElementById('startTime').value.trim();
-      const endTime = document.getElementById('endTime').value.trim();
-
-      hideStatus();
-      const btn = document.getElementById('btnDownload');
-      btn.disabled = true;
-      showStatus('loading', `Sedang memproses ${selectedFormat.toUpperCase()}... Mohon tunggu, bisa beberapa menit.`);
-
-      try {
-        const res = await fetch('/api/download', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, format: selectedFormat, startTime, endTime }),
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          if (data.setup) showSetup();
-          else showStatus('error', '❌ ' + data.error);
-          return;
-        }
-
-        // Trigger download
-        if (!res.ok) {
-          const data = await res.json();
-          if (data.setup) showSetup();
-          else showStatus('error', '❌ ' + data.error);
-          return;
-        }
-
-        const contentType = res.headers.get('Content-Type') || '';
-        const disposition = res.headers.get('Content-Disposition') || '';
-        let filename = disposition.match(/filename="?([^";\n]+)"?/)?.[1]?.trim() || `hasil.${selectedFormat}`;
-
-        const reader = res.body.getReader();
-        const chunks = [];
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-        }
-
-        const blob = new Blob(chunks, { type: contentType });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-
-        showStatus('success', '✅ Download berhasil!');
-      } catch (e) {
-        showStatus('error', '❌ Terjadi kesalahan: ' + e.message);
-      } finally {
-        btn.disabled = false;
-      }
-    }
-
-    // Enter key trigger
-    document.getElementById('urlInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') fetchInfo();
+  // ── Helper: proses file dari server ──
+  async function processFile(params, loadingMsg) {
+    const res = await fetch('/api/download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
     });
-  </script>
+    if (!res.ok) {
+      const data = await res.json();
+      if (data.setup) showSetup(); else showStatus('error', '❌ ' + data.error);
+      return null;
+    }
+    const contentType = res.headers.get('Content-Type') || '';
+    const reader = res.body.getReader();
+    const chunks = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+    return new Blob(chunks, { type: contentType });
+  }
+
+  // ── PREVIEW ──
+  async function startPreview() {
+    const params = getParams();
+    if (!params.url) return alert('Masukkan URL YouTube dulu!');
+    if (selectedFormat !== 'mp3') return alert('Preview hanya tersedia untuk format MP3.');
+
+    // Buang preview lama
+    hideAudioBox();
+    if (previewBlobUrl) { URL.revokeObjectURL(previewBlobUrl); previewBlobUrl = null; }
+
+    const btnP = document.getElementById('btnPreview');
+    const btnD = document.getElementById('btnDownload');
+    btnP.disabled = true; btnD.disabled = true;
+    hideStatus();
+    showStatus('loading', 'Memproses preview MP3... Mohon tunggu.');
+
+    try {
+      const blob = await processFile(params);
+      if (!blob) return;
+      previewBlobUrl = URL.createObjectURL(blob);
+      showAudioBox(previewBlobUrl, '▶ PREVIEW', 'preview', params.filename);
+      hideStatus();
+    } catch (e) {
+      showStatus('error', '❌ Terjadi kesalahan: ' + e.message);
+    } finally {
+      btnP.disabled = false; btnD.disabled = false;
+    }
+  }
+
+  // ── DOWNLOAD ──
+  async function startDownload() {
+    const params = getParams();
+    if (!params.url) return alert('Masukkan URL YouTube dulu!');
+
+    const btnP = document.getElementById('btnPreview');
+    const btnD = document.getElementById('btnDownload');
+    btnP.disabled = true; btnD.disabled = true;
+    hideStatus();
+    showStatus('loading', `Memproses ${selectedFormat.toUpperCase()}... Mohon tunggu.`);
+
+    try {
+      let blob;
+      // Kalau sudah ada preview blob dan format mp3, pakai langsung (tidak proses ulang)
+      if (previewBlobUrl && selectedFormat === 'mp3') {
+        const audioEl = document.getElementById('audioPlayer');
+        // Re-fetch blob dari URL yang sama
+        const r = await fetch(previewBlobUrl);
+        blob = await r.blob();
+      } else {
+        blob = await processFile(params);
+        if (!blob) return;
+      }
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Trigger download
+      const a = document.createElement('a');
+      a.href = blobUrl; a.download = params.filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+      // Tampilkan di audio player (mp3)
+      if (selectedFormat === 'mp3') {
+        // Revoke preview lama
+        if (previewBlobUrl && previewBlobUrl !== blobUrl) {
+          URL.revokeObjectURL(previewBlobUrl);
+        }
+        previewBlobUrl = blobUrl;
+        showAudioBox(blobUrl, '✅ DOWNLOADED', 'downloaded', params.filename);
+        setTimeout(() => { if (previewBlobUrl === blobUrl) { URL.revokeObjectURL(blobUrl); previewBlobUrl = null; } }, 120000);
+      } else {
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      }
+
+      showStatus('success', `✅ Download berhasil! — ${params.filename}`);
+    } catch (e) {
+      showStatus('error', '❌ Terjadi kesalahan: ' + e.message);
+    } finally {
+      btnP.disabled = false; btnD.disabled = false;
+    }
+  }
+
+  // ── Init ──
+  document.getElementById('urlInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') fetchInfo(); });
+  document.getElementById('urlInput').addEventListener('input', saveState);
+  window.addEventListener('DOMContentLoaded', loadState);
+</script>
 
 </body>
 </html>
